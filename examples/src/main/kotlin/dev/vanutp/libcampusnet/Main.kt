@@ -44,7 +44,11 @@ suspend fun main() {
     // Use the client
     println(client.getUserInfo())
     client.fetchCourses()
-    val cal = client.getCalendar(LocalDate(2025, 2, 3))
+    val cal = client.getCalendar(
+        LocalDate(2025, 2, 10),
+        true,
+        LocalDate(2025, 2, 3),
+    )
     calOutPath.writeText(cal.toString())
 
     // Save data

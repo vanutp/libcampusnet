@@ -349,16 +349,18 @@ class CNetClient private constructor(
                 continue
             }
             val weekdayCells = row.select("td")
-            for ((i, weekdayCell) in weekdayCells.withIndex()) {
-                if (!weekdayCell.hasClass("appointment")) {
+            for (cell in weekdayCells) {
+                if (!cell.hasClass("appointment")) {
                     continue
                 }
+                val weekdayStr = cell.attr("abbr").split(' ')[0]
+                val weekday = weekdayToInt(weekdayStr)
 
-                val timeText = weekdayCell.selectFirst(".timePeriod > i")!!.text().trim()
+                val timeText = cell.selectFirst(".timePeriod > i")!!.text().trim()
                 val (startTime, endTime) = timeText.split(" - ")
                     .let { Pair(LocalTime.parse(it[0]), LocalTime.parse(it[1])) }
                 val day = pivotDay.clone() as GregorianCalendar
-                day.add(java.util.Calendar.DAY_OF_MONTH, i)
+                day.add(java.util.Calendar.DAY_OF_MONTH, weekday)
                 val startDt = day.clone() as GregorianCalendar
                 startDt.set(java.util.Calendar.HOUR_OF_DAY, startTime.hour)
                 startDt.set(java.util.Calendar.MINUTE, startTime.minute)
@@ -366,7 +368,7 @@ class CNetClient private constructor(
                 endDt.set(java.util.Calendar.HOUR_OF_DAY, endTime.hour)
                 endDt.set(java.util.Calendar.MINUTE, endTime.minute)
 
-                val courseCode = weekdayCell.selectFirst(">a.link")!!.text().trim()
+                val courseCode = cell.selectFirst(">a.link")!!.text().trim()
                 val course = cache.getCourse(courseCode)
                 val eventName = course?.let { "${it.name} (${it.code})" } ?: courseCode
 
@@ -374,7 +376,7 @@ class CNetClient private constructor(
                 event.add<VEvent>(ug.generateUid())
                 event.add<VEvent>(vtz.timeZoneId)
 
-                val locationEl = weekdayCell.selectFirst(".timePeriod > .arrow")
+                val locationEl = cell.selectFirst(".timePeriod > .arrow")
                 locationEl?.let {
                     event.add<VEvent>(Location(it.text().trim()))
                 }
